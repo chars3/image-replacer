@@ -30,6 +30,11 @@ function App() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState<boolean>(false);
+  const [lastReplacement, setLastReplacement] = useState<{
+    postId: number;
+    oldImage: string;
+    newImage: string;
+  } | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery<PostsResponse>(
     ["posts", page, perPage],
@@ -49,22 +54,57 @@ function App() {
     setShowReplaceModal(false);
   };
 
-  const handleReplaceImage = async (newImageUrl: string) => {
+  const handleReplaceImage = async (newImageUrl: string, oldImageUrl: string) => {
     try {
-      await api.replaceImage(selectedPost!.id, selectedImage!.src, newImageUrl);
+      await api.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
+
+      setLastReplacement({
+        postId: selectedPost!.id,
+        oldImage: oldImageUrl,
+        newImage: newImageUrl,
+      });
+
       setShowReplaceModal(false);
       refetch();
     } catch (err) {
       console.error("Erro ao substituir imagem:", err);
-      alert(
-        "Ocorreu um erro ao substituir a imagem. Por favor, tente novamente."
+      alert("Ocorreu um erro ao substituir a imagem. Por favor, tente novamente.");
+    }
+  };
+
+  const handleUndoReplace = async () => {
+    if (!lastReplacement) return;
+
+    try {
+      await api.replaceImage(
+        lastReplacement.postId,
+        lastReplacement.newImage,
+        lastReplacement.oldImage
       );
+
+      setLastReplacement(null);
+      refetch();
+    } catch (err) {
+      console.error("Erro ao desfazer substituição:", err);
+      alert("Erro ao desfazer a substituição da imagem.");
     }
   };
 
   return (
     <div className="container p-6">
       <h2 className="text-2xl font-bold mb-6">Substituição de Imagens</h2>
+
+      {lastReplacement && (
+        <div className="mb-4 p-4 bg-yellow-100 text-yellow-900 rounded flex justify-between items-center">
+          <span>Imagem substituída com sucesso.</span>
+          <button
+            onClick={handleUndoReplace}
+            className="ml-4 px-3 py-1 bg-yellow-300 rounded hover:bg-yellow-400 text-sm font-medium"
+          >
+            Desfazer
+          </button>
+        </div>
+      )}
 
       {error instanceof Error && (
         <ErrorMessage message={error.message} onRetry={refetch} />

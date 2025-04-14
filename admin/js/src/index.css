@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos específicos da aplicação */
+.wp-core-ui .ir-button-primary {
+  @apply ir-bg-wp-blue ir-text-white ir-font-bold ir-py-2 ir-px-4 ir-rounded ir-transition-colors hover:ir-bg-wp-light-blue;
+}
+
+.wp-core-ui .ir-button-secondary {
+  @apply ir-bg-gray-200 ir-text-gray-800 ir-font-bold ir-py-2 ir-px-4 ir-rounded ir-transition-colors hover:ir-bg-gray-300;
+}
+
+.ir-card {
+  @apply ir-bg-white ir-shadow ir-rounded ir-p-4 ir-mb-4;
+}
+
+.ir-image-preview {
+  @apply ir-relative ir-border ir-border-gray-200 ir-rounded ir-overflow-hidden ir-mb-4;
+}
+
+.ir-image-actions {
+  @apply ir-absolute ir-bottom-0 ir-left-0 ir-right-0 ir-bg-black ir-bg-opacity-70 ir-text-white ir-p-2 ir-text-center;
+}
+
+.ir-loading {
+  @apply ir-flex ir-justify-center ir-items-center ir-p-8;
+}
+
+.ir-spinner {
+  @apply ir-animate-spin ir-h-10 ir-w-10 ir-border-4 ir-border-wp-blue ir-rounded-full ir-border-t-transparent;
+}
+
+.ir-pagination {
+  @apply ir-flex ir-justify-center ir-items-center ir-mt-6 ir-space-x-2;
+}
+
+.ir-page-button {
+  @apply ir-px-3 ir-py-1 ir-rounded ir-bg-gray-200 hover:ir-bg-gray-300 ir-transition-colors;
+}
+
+.ir-page-button-active {
+  @apply ir-bg-wp-blue ir-text-white hover:ir-bg-wp-light-blue;
+}

@@ -1,135 +1,64 @@
-import { useState } from 'react'
-import { useQuery } from 'react-query'
-import PostsList from './components/PostsList'
-import Pagination from './components/Pagination'
-import ImageViewer from './components/ImageViewer'
-import LoadingSpinner from './components/LoadingSpinner'
-import ErrorMessage from './components/ErrorMessage'
-import ImageReplaceModal from './components/ImageReplaceModal'
-import api from './services/api.js'
+import React, { useState, useEffect } from 'react';
 
 function App() {
-  const [page, setPage] = useState(1)
-  const [perPage, setPerPage] = useState(10)
-  const [selectedPost, setSelectedPost] = useState(null)
-  const [selectedImage, setSelectedImage] = useState(null)
-  const [showReplaceModal, setShowReplaceModal] = useState(false)
-  
-  // Consulta para buscar posts com imagens
-  const { data, isLoading, error, refetch } = useQuery(
-    ['posts', page, perPage],
-    () => api.getPosts(page, perPage),
-    {
-      keepPreviousData: true,
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [wpSettings, setWpSettings] = useState(null);
+
+  useEffect(() => {
+    // Verificar se as configurações do WordPress estão disponíveis
+    if (window.imageReplacerSettings) {
+      setWpSettings(window.imageReplacerSettings);
     }
-  )
-  
-  // Função para selecionar um post e suas imagens
-  const handleSelectPost = (post) => {
-    setSelectedPost(post)
-    setSelectedImage(null)
-  }
-  
-  // Função para selecionar uma imagem específica
-  const handleSelectImage = (image) => {
-    setSelectedImage(image)
-  }
-  
-  // Função para abrir o modal de substituição
-  const handleOpenReplaceModal = () => {
-    if (selectedPost && selectedImage) {
-      setShowReplaceModal(true)
-    }
-  }
-  
-  // Função para fechar o modal de substituição
-  const handleCloseReplaceModal = () => {
-    setShowReplaceModal(false)
-  }
-  
-  // Função para realizar a substituição da imagem
-  const handleReplaceImage = async (newImageUrl) => {
-    try {
-      await api.replaceImage(selectedPost.id, selectedImage.src, newImageUrl)
-      setShowReplaceModal(false)
-      refetch() // Recarrega a lista para mostrar as alterações
-    } catch (err) {
-      console.error("Erro ao substituir imagem:", err)
-      alert("Ocorreu um erro ao substituir a imagem. Por favor, tente novamente.")
-    }
-  }
-  
+    
+    // Marcar que o componente foi carregado
+    setIsLoaded(true);
+    
+    // Registrar no console para depuração
+    console.log('React App carregado com sucesso!');
+    console.log('Settings do WordPress:', window.imageReplacerSettings);
+  }, []);
+
   return (
-    <div className="ir-container ir-p-4">
-      <h2 className="ir-text-2xl ir-font-bold ir-mb-4">Substituição de Imagens</h2>
+    <div className="ir-app-test" style={{ padding: '20px', border: '2px solid #0073aa', borderRadius: '5px', backgroundColor: '#f9f9f9' }}>
+      <h2 style={{ color: '#0073aa' }}>Teste de Carregamento do React</h2>
       
-      {error && <ErrorMessage message="Erro ao carregar posts. Por favor, tente novamente." />}
-      
-      <div className="ir-grid ir-grid-cols-1 ir-gap-4 md:ir-grid-cols-3">
-        <div className="ir-col-span-1">
-          <div className="ir-card">
-            <h3 className="ir-text-lg ir-font-medium ir-mb-4">Posts com Imagens</h3>
-            
-            {isLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <>
-                <PostsList 
-                  posts={data?.posts || []} 
-                  selectedPostId={selectedPost?.id} 
-                  onSelectPost={handleSelectPost} 
-                />
-                
-                {data && (
-                  <Pagination 
-                    currentPage={page} 
-                    totalPages={data.pages || 1} 
-                    onPageChange={setPage} 
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </div>
+      <div style={{ margin: '20px 0', padding: '15px', backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '4px' }}>
+        <p><strong>Status:</strong> {isLoaded ? '✅ React carregado com sucesso!' : '⏳ Carregando...'}</p>
         
-        <div className="ir-col-span-2">
-          <div className="ir-card">
-            <h3 className="ir-text-lg ir-font-medium ir-mb-4">
-              {selectedPost ? `Imagens em: ${selectedPost.title}` : 'Selecione um post para ver suas imagens'}
-            </h3>
-            
-            {selectedPost && (
-              <ImageViewer 
-                images={selectedPost.images} 
-                selectedImage={selectedImage} 
-                onSelectImage={handleSelectImage} 
-              />
-            )}
-            
-            {selectedImage && (
-              <div className="ir-mt-4 ir-text-right">
-                <button 
-                  onClick={handleOpenReplaceModal} 
-                  className="ir-button-primary"
-                >
-                  Substituir Imagem Selecionada
-                </button>
-              </div>
-            )}
+        <p><strong>WordPress Settings:</strong> {wpSettings ? '✅ Disponível' : '❌ Não disponível'}</p>
+        
+        {wpSettings && (
+          <div style={{ marginTop: '10px' }}>
+            <h4>Detalhes das configurações:</h4>
+            <ul style={{ listStyleType: 'disc', paddingLeft: '20px' }}>
+              <li><strong>API Endpoint:</strong> {wpSettings.apiEndpoint || 'Não disponível'}</li>
+              <li><strong>Admin URL:</strong> {wpSettings.adminUrl || 'Não disponível'}</li>
+              <li><strong>Dev Mode:</strong> {wpSettings.isDev ? 'Sim' : 'Não'}</li>
+              <li><strong>Admin Permissions:</strong> {wpSettings.isAdmin ? 'Sim' : 'Não'}</li>
+            </ul>
           </div>
-        </div>
+        )}
       </div>
       
-      {showReplaceModal && (
-        <ImageReplaceModal 
-          post={selectedPost}
-          image={selectedImage}
-          onClose={handleCloseReplaceModal}
-          onReplace={handleReplaceImage}
-        />
-      )}
+      <div style={{ marginTop: '20px' }}>
+        <p>Se você está vendo esta mensagem, o React foi carregado corretamente!</p>
+        <p>Verifique o console do navegador para mais informações de depuração.</p>
+        <button 
+          onClick={() => alert('Clique funcionando! O React está operando corretamente.')} 
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#0073aa',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Clique para testar interatividade
+        </button>
+      </div>
     </div>
-  )
+  );
 }
 
 export default App;

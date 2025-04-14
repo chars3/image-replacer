@@ -1,41 +1,31 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  
-  // Especificar o ponto de entrada diretamente
   build: {
+    watch: {}, // <-- ESSENCIAL pro modo watch funcionar com `vite build`
+    outDir: 'js/dist',
+    sourcemap: true,
+    minify: false, // pode deixar true se quiser minificação
+    lib: {
+      entry: path.resolve(__dirname, 'src/main.tsx'),
+      name: 'ImageReplacer',
+      formats: ['iife'],
+      fileName: () => 'assets/main.js'
+    },
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/main.jsx'),
       output: {
-        entryFileNames: 'assets/main.js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name].[ext]'
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        }
       }
-    },
-    outDir: 'dist',
-    minify: process.env.NODE_ENV === 'production',
-    sourcemap: process.env.NODE_ENV !== 'production'
-  },
-  
-  server: {
-    port: 5173,
-    watch: {
-      usePolling: true,
-    },
-    hmr: {
-      host: 'localhost',
-      protocol: 'ws',
     }
   },
-  
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
-    extensions: ['.js', '.jsx', '.json'] // Adicione esta linha
-  },
-});
+    alias: { '@': path.resolve(__dirname, 'src') },
+    extensions: ['.js', '.jsx', '.json']
+  }
+})

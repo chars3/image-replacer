@@ -14,10 +14,4 @@ export default {
     },
   },
   plugins: [],
-  // Prefixo para evitar conflitos com outros estilos do WordPress
-  prefix: 'ir-',
-  // Configuração para garantir que o Tailwind CSS não entre em conflito com estilos do WordPress
-  corePlugins: {
-    preflight: false,
-  },
 }

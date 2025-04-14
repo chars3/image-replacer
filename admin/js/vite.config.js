@@ -4,11 +4,15 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+  },
   build: {
-    watch: {}, // <-- ESSENCIAL pro modo watch funcionar com `vite build`
-    outDir: 'js/dist',
+    watch: {},
+    outDir: 'dist',
     sourcemap: true,
-    minify: false, // pode deixar true se quiser minificação
+    minify: false,
+    cssCodeSplit: true, // <- Adiciona isso!
     lib: {
       entry: path.resolve(__dirname, 'src/main.tsx'),
       name: 'ImageReplacer',
@@ -23,9 +27,10 @@ export default defineConfig({
         }
       }
     }
-  },
+  }
+  ,
   resolve: {
     alias: { '@': path.resolve(__dirname, 'src') },
-    extensions: ['.js', '.jsx', '.json']
-  }
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+  },
 })

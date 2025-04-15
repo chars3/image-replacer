@@ -4,10 +4,12 @@ on:
   push:
     tags:
       - 'v*'
-  
-  # Opcional: Adicionar workflow de teste para pull requests
+
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: write
 
 jobs:
   test:
@@ -32,7 +34,7 @@ jobs:
         run: |
           cd admin/js
           npm run test
-  
+
   build-and-release:
     needs: test
     if: startsWith(github.ref, 'refs/tags/v')
@@ -64,7 +66,6 @@ jobs:
         run: |
           mkdir -p image-replacer
           cp -r *.php includes admin image-replacer/
-          [ -d languages ] && cp -r languages image-replacer/
           # Remove development files
           rm -rf image-replacer/admin/js/node_modules
           rm -rf image-replacer/admin/js/src
@@ -87,4 +88,4 @@ jobs:
           files: image-replacer.zip
           generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 

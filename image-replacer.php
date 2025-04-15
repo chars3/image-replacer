@@ -9,11 +9,9 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Image Replacer
- * Plugin URI:        http://example.com/image-replacer-uri/
  * Description:       Permite encontrar e substituir imagens em posts do WordPress
- * Version:           1.0.0
- * Author:            Your Name
- * Author URI:        http://example.com/
+ * Version:           1.0.6
+ * Author:            Charles
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       image-replacer

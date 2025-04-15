@@ -56,7 +56,7 @@ jobs:
       - name: Build JS assets
         run: |
           cd admin/js
-          npm run build
+          npm run build --no-watch
 
       - name: Create release ZIP
         run: |

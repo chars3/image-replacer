@@ -54,9 +54,11 @@ jobs:
           npm ci
 
       - name: Build JS assets
+        env:
+          NODE_ENV: production
         run: |
           cd admin/js
-          npm run build --no-watch
+          npm run build
 
       - name: Create release ZIP
         run: |

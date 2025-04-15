@@ -8,7 +8,8 @@ export default defineConfig({
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
   },
   build: {
-    watch: {},
+    // Remova ou condicione o modo watch
+    watch: process.env.NODE_ENV === 'production' ? null : {},
     outDir: 'dist',
     sourcemap: true,
     minify: false,
@@ -33,7 +34,6 @@ export default defineConfig({
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
   },
 
-  // ✅ Adiciona isso:
   test: {
     globals: true,
     environment: 'jsdom',

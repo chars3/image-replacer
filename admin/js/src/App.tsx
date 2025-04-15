@@ -6,6 +6,8 @@ import ErrorMessage from "./components/ErrorMessage";
 import ImageReplaceModal from "./components/ImageReplaceModal";
 import PostCard from "./components/PostCard";
 import api from "./services/api";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Tipos dos dados
 interface Image {
@@ -66,13 +68,26 @@ function App() {
 
       setShowReplaceModal(false);
       refetch();
+
+      toast.success(
+        <div className="flex justify-between items-center gap-4">
+          <span>Imagem substituída com sucesso.</span>
+          <button
+            onClick={() => handleUndoReplace(true)}
+            className="text-sm font-semibold text-blue-700 hover:underline"
+          >
+            Desfazer
+          </button>
+        </div>,
+        { autoClose: 7000 }
+      );
     } catch (err) {
       console.error("Erro ao substituir imagem:", err);
-      alert("Ocorreu um erro ao substituir a imagem. Por favor, tente novamente.");
+      toast.error("Erro ao substituir a imagem.");
     }
   };
 
-  const handleUndoReplace = async () => {
+  const handleUndoReplace = async (calledFromToast = false) => {
     if (!lastReplacement) return;
 
     try {
@@ -81,30 +96,21 @@ function App() {
         lastReplacement.newImage,
         lastReplacement.oldImage
       );
-
       setLastReplacement(null);
       refetch();
+
+      if (!calledFromToast) {
+        toast.success("Substituição desfeita com sucesso.");
+      }
     } catch (err) {
       console.error("Erro ao desfazer substituição:", err);
-      alert("Erro ao desfazer a substituição da imagem.");
+      toast.error("Erro ao desfazer a substituição da imagem.");
     }
   };
 
   return (
     <div className="container p-6">
       <h2 className="text-2xl font-bold mb-6">Substituição de Imagens</h2>
-
-      {lastReplacement && (
-        <div className="mb-4 p-4 bg-yellow-100 text-yellow-900 rounded flex justify-between items-center">
-          <span>Imagem substituída com sucesso.</span>
-          <button
-            onClick={handleUndoReplace}
-            className="ml-4 px-3 py-1 bg-yellow-300 rounded hover:bg-yellow-400 text-sm font-medium"
-          >
-            Desfazer
-          </button>
-        </div>
-      )}
 
       {error instanceof Error && (
         <ErrorMessage message={error.message} onRetry={refetch} />

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { ToastContainer } from "react-toastify";
 
 // Criando o cliente do React Query para gerenciar estados e requisições
 const queryClient = new QueryClient({
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <React.StrictMode>
         <QueryClientProvider client={queryClient}>
           <App />
+          <ToastContainer position="top-right" autoClose={7000} />
         </QueryClientProvider>
       </React.StrictMode>
     )

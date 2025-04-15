@@ -45,21 +45,23 @@ interface Attachment {
   height: number;
 }
 
+interface WPMediaFrame {
+  on(event: string, callback: () => void): void;
+  open(): void;
+  state(): {
+    get(what: string): {
+      first(): { toJSON(): Attachment };
+      length: number;
+    } | null;
+  };
+}
+
 // Definição dos tipos para o WordPress global
 declare global {
   interface Window {
     imageReplacerSettings?: WpSettings;
     wp?: {
-      media: (options: any) => {
-        on(event: string, callback: () => void): void;
-        open(): void;
-        state(): {
-          get(what: string): {
-            first(): { toJSON(): Attachment };
-            length: number;
-          } | null;
-        };
-      };
+      media: (options: MediaLibraryOptions) => WPMediaFrame;
     };
   }
 }
@@ -79,6 +81,13 @@ const api: AxiosInstance = axios.create({
     'X-WP-Nonce': wpSettings.nonce
   }
 });
+
+// Tipo para a resposta da operação de substituição de imagem
+interface ReplaceImageResponse {
+  success: boolean;
+  post_id: number;
+  message: string;
+}
 
 // Serviço para comunicação com a API
 const apiService = {
@@ -107,9 +116,9 @@ const apiService = {
   },
 
   // Substitui uma imagem em um post
-  async replaceImage(postId: number, oldImageSrc: string, newImageSrc: string): Promise<any> {
+  async replaceImage(postId: number, oldImageSrc: string, newImageSrc: string): Promise<ReplaceImageResponse> {
     try {
-      const response = await api.post('/replace-image', {
+      const response = await api.post<ReplaceImageResponse>('/replace-image', {
         post_id: postId,
         old_image: oldImageSrc,
         new_image: newImageSrc
@@ -170,7 +179,7 @@ const apiService = {
           if (!selection || selection.length === 0) {
             reject(new Error('Nenhuma imagem selecionada'));
           }
-        } catch (error) {
+        } catch {
           // Ignoramos erros aqui, pois podem ocorrer no fechamento normal
         }
       });

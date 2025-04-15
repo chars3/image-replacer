@@ -1,29 +1,29 @@
 /// <reference types="vitest" />
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock diretamente o objeto api do arquivo api.ts em vez do axios
 // Como parece que o serviço está exportando as funções como métodos de um objeto
-vi.mock('../api', () => {
+vi.mock("../api", () => {
   return {
     default: {
       getPosts: vi.fn(),
       getImagesFromPost: vi.fn(),
-      replaceImage: vi.fn()
-    }
+      replaceImage: vi.fn(),
+    },
   };
 });
 
 // Importar o serviço API depois de definir o mock
-import apiService from '../api';
+import apiService from "../api";
 
-describe('apiService', () => {
+describe("apiService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('getPosts retorna dados paginados', async () => {
+  it("getPosts retorna dados paginados", async () => {
     const mockData = {
-      posts: [{ id: 1, title: 'Post', images: [] }],
+      posts: [{ id: 1, title: "Post", images: [] }],
       pages: 1,
       total: 1,
     };
@@ -36,13 +36,13 @@ describe('apiService', () => {
 
     // Verificamos se foi chamado com os parâmetros corretos
     expect(apiService.getPosts).toHaveBeenCalledWith(1, 10);
-    
+
     // Verificamos o resultado
     expect(result).toEqual(mockData);
   });
 
-  it('getImagesFromPost retorna lista de imagens', async () => {
-    const mockImages = [{ src: 'https://img.jpg' }];
+  it("getImagesFromPost retorna lista de imagens", async () => {
+    const mockImages = [{ src: "https://img.jpg" }];
 
     vi.mocked(apiService.getImagesFromPost).mockResolvedValueOnce(mockImages);
 
@@ -52,21 +52,25 @@ describe('apiService', () => {
     expect(result).toEqual(mockImages);
   });
 
-  it('replaceImage envia dados corretos para a API', async () => {
-    const mockResponse = { success: true };
+  it("replaceImage envia dados corretos para a API", async () => {
+    const mockResponse = {
+      success: true,
+      post_id: 123,
+      message: "Imagem substituída com sucesso",
+    };
 
     vi.mocked(apiService.replaceImage).mockResolvedValueOnce(mockResponse);
 
     const result = await apiService.replaceImage(
       123,
-      'https://old.jpg',
-      'https://new.jpg'
+      "https://old.jpg",
+      "https://new.jpg"
     );
 
     expect(apiService.replaceImage).toHaveBeenCalledWith(
       123,
-      'https://old.jpg',
-      'https://new.jpg'
+      "https://old.jpg",
+      "https://new.jpg"
     );
     expect(result).toEqual(mockResponse);
   });

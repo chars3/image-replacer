@@ -1,5 +1,13 @@
 import React, { useState } from "react";
 
+interface WPMediaFrame {
+  on: (event: string, callback: () => void) => void;
+  open: () => void;
+  state: () => {
+    get: (property: string) => any;
+  };
+}
+
 interface Image {
   src: string;
   alt?: string;
@@ -34,7 +42,7 @@ const ImageReplaceModal: React.FC<ImageReplaceModalProps> = ({
       multiple: false,
       library: { type: "image" },
       button: { text: "Usar esta imagem" },
-    }) as any;
+    }) as WPMediaFrame;
 
     frame.on("select", () => {
       const attachment = frame.state().get("selection").first().toJSON();

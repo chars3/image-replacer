@@ -1,0 +1,51 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '**.php'
+      - '**.js'
+      - '**.jsx'
+      - '**.ts'
+      - '**.tsx'
+      - '**test**'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  javascript-tests:
+    name: JavaScript Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: admin/js/package-lock.json
+
+      - name: Install JS dependencies
+        run: |
+          cd admin/js
+          npm ci
+
+      - name: Run JS tests
+        run: |
+          cd admin/js
+          npm run test
+          
+      - name: Run TypeScript type checking
+        run: |
+          cd admin/js
+          npm run typecheck
+
+      - name: Run linting
+        run: |
+          cd admin/js
+          npm run lint

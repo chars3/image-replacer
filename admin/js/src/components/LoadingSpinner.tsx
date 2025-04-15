@@ -10,13 +10,16 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   message = 'Carregando...',
 }) => {
   const spinnerSize =
-    size === 'small' ? 'ir-h-6 ir-w-6 ir-border-2' : 'ir-h-10 ir-w-10 ir-border-4';
+    size === 'small' ? 'h-6 w-6 border-2' : 'h-10 w-10 border-4';
 
   return (
-    <div className="ir-loading">
-      <div className="ir-flex ir-flex-col ir-items-center">
-        <div className={`ir-spinner ${spinnerSize}`} />
-        {message && <p className="ir-mt-2 ir-text-gray-600">{message}</p>}
+    <div className="flex justify-center items-center p-8">
+      <div className="flex flex-col items-center">
+        <div
+          role="status"
+          className={`animate-spin rounded-full border-blue-500 border-t-transparent ${spinnerSize} border`}
+        />
+        {message && <p className="mt-2 text-gray-600">{message}</p>}
       </div>
     </div>
   );

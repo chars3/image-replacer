@@ -5,11 +5,10 @@ import LoadingSpinner from "./components/LoadingSpinner";
 import ErrorMessage from "./components/ErrorMessage";
 import ImageReplaceModal from "./components/ImageReplaceModal";
 import PostCard from "./components/PostCard";
-import api from "./services/api";
+import apiService from "./services/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Tipos dos dados
 interface Image {
   src: string;
   alt?: string;
@@ -32,15 +31,10 @@ function App() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [showReplaceModal, setShowReplaceModal] = useState<boolean>(false);
-  const [lastReplacement, setLastReplacement] = useState<{
-    postId: number;
-    oldImage: string;
-    newImage: string;
-  } | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery<PostsResponse>(
     ["posts", page, perPage],
-    () => api.getPosts(page, perPage),
+    () => apiService.getPosts(page, perPage),
     {
       keepPreviousData: true,
     }
@@ -58,53 +52,16 @@ function App() {
 
   const handleReplaceImage = async (newImageUrl: string, oldImageUrl: string) => {
     try {
-      await api.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
-
-      setLastReplacement({
-        postId: selectedPost!.id,
-        oldImage: oldImageUrl,
-        newImage: newImageUrl,
-      });
-
+      await apiService.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
       setShowReplaceModal(false);
       refetch();
 
-      toast.success(
-        <div className="flex justify-between items-center gap-4">
-          <span>Imagem substituída com sucesso.</span>
-          <button
-            onClick={() => handleUndoReplace(true)}
-            className="text-sm font-semibold text-blue-700 hover:underline"
-          >
-            Desfazer
-          </button>
-        </div>,
-        { autoClose: 7000 }
-      );
+      toast.success("Imagem substituída com sucesso.", {
+        autoClose: 5000,
+      });
     } catch (err) {
       console.error("Erro ao substituir imagem:", err);
       toast.error("Erro ao substituir a imagem.");
-    }
-  };
-
-  const handleUndoReplace = async (calledFromToast = false) => {
-    if (!lastReplacement) return;
-
-    try {
-      await api.replaceImage(
-        lastReplacement.postId,
-        lastReplacement.newImage,
-        lastReplacement.oldImage
-      );
-      setLastReplacement(null);
-      refetch();
-
-      if (!calledFromToast) {
-        toast.success("Substituição desfeita com sucesso.");
-      }
-    } catch (err) {
-      console.error("Erro ao desfazer substituição:", err);
-      toast.error("Erro ao desfazer a substituição da imagem.");
     }
   };
 

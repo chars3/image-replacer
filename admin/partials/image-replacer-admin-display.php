@@ -20,7 +20,7 @@
         <div id="image-replacer-app">
             <!-- O aplicativo React será renderizado aqui -->
             <div class="image-replacer-loading">
-                <p><?php _e( 'Carregando aplicativo...', 'image-replacer' ); ?></p>
+                <p><?php esc_html_e( 'Carregando aplicativo...', 'image-replacer' ); ?></p>
             </div>
         </div>
     </div>

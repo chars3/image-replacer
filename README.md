@@ -14,6 +14,12 @@ Image Replacer is a powerful tool designed to help WordPress content managers an
 - **Post Navigation**: Easily navigate between posts containing images
 - **WordPress Media Library Integration**: Seamlessly select replacement images from your existing media library
 
+## Demo
+
+<video src="https://github.com/user-attachments/assets/9d8adf34-17b4-4f0d-bfe2-a987b5b107bf" controls width="100%" style="max-width: 700px; border-radius: 8px;">
+  Your browser does not support the video tag.
+</video>
+
 ## Technical Details
 
 The plugin is built with:

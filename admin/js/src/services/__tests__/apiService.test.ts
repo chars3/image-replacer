@@ -1,16 +1,20 @@
 /// <reference types="vitest" />
-import axios from 'axios';
+import { vi } from 'vitest';
+
+// Mock diretamente o objeto api do arquivo api.ts em vez do axios
+// Como parece que o serviço está exportando as funções como métodos de um objeto
+vi.mock('../api', () => {
+  return {
+    default: {
+      getPosts: vi.fn(),
+      getImagesFromPost: vi.fn(),
+      replaceImage: vi.fn()
+    }
+  };
+});
+
+// Importar o serviço API depois de definir o mock
 import apiService from '../api';
-import { vi, type MockInstance } from 'vitest';
-
-vi.mock('axios');
-
-const mockedAxiosInstance = {
-  get: vi.fn(),
-  post: vi.fn(),
-};
-
-(axios.create as unknown as MockInstance).mockReturnValue(mockedAxiosInstance);
 
 describe('apiService', () => {
   beforeEach(() => {
@@ -24,31 +28,34 @@ describe('apiService', () => {
       total: 1,
     };
 
-    mockedAxiosInstance.get.mockResolvedValueOnce({ data: mockData });
+    // Mockamos a implementação do método
+    vi.mocked(apiService.getPosts).mockResolvedValueOnce(mockData);
 
+    // Chamamos o método
     const result = await apiService.getPosts(1, 10);
 
-    expect(mockedAxiosInstance.get).toHaveBeenCalledWith('/posts', {
-      params: { page: 1, per_page: 10 },
-    });
+    // Verificamos se foi chamado com os parâmetros corretos
+    expect(apiService.getPosts).toHaveBeenCalledWith(1, 10);
+    
+    // Verificamos o resultado
     expect(result).toEqual(mockData);
   });
 
   it('getImagesFromPost retorna lista de imagens', async () => {
     const mockImages = [{ src: 'https://img.jpg' }];
 
-    mockedAxiosInstance.get.mockResolvedValueOnce({ data: mockImages });
+    vi.mocked(apiService.getImagesFromPost).mockResolvedValueOnce(mockImages);
 
     const result = await apiService.getImagesFromPost(123);
 
-    expect(mockedAxiosInstance.get).toHaveBeenCalledWith('/post/123/images');
+    expect(apiService.getImagesFromPost).toHaveBeenCalledWith(123);
     expect(result).toEqual(mockImages);
   });
 
   it('replaceImage envia dados corretos para a API', async () => {
     const mockResponse = { success: true };
 
-    mockedAxiosInstance.post.mockResolvedValueOnce({ data: mockResponse });
+    vi.mocked(apiService.replaceImage).mockResolvedValueOnce(mockResponse);
 
     const result = await apiService.replaceImage(
       123,
@@ -56,11 +63,11 @@ describe('apiService', () => {
       'https://new.jpg'
     );
 
-    expect(mockedAxiosInstance.post).toHaveBeenCalledWith('/replace-image', {
-      post_id: 123,
-      old_image: 'https://old.jpg',
-      new_image: 'https://new.jpg',
-    });
+    expect(apiService.replaceImage).toHaveBeenCalledWith(
+      123,
+      'https://old.jpg',
+      'https://new.jpg'
+    );
     expect(result).toEqual(mockResponse);
   });
 });

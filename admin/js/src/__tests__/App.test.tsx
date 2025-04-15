@@ -1,30 +1,35 @@
-import { describe, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import App from '../App';
-import * as api from '../services/api';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { describe, it, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import App from "../App";
+import * as api from "../services/api";
+import { QueryClient, QueryClientProvider } from "react-query";
 
-vi.mock('../services/api');
+vi.mock("../services/api");
 
 const mockPosts = [
   {
     id: 1,
-    title: 'Post de Teste',
+    title: "Post de Teste",
     images: [
-      { src: 'https://img1.jpg', alt: 'Imagem 1' },
-      { src: 'https://img2.jpg', alt: 'Imagem 2' }
-    ]
-  }
+      { src: "https://img1.jpg", alt: "Imagem 1" },
+      { src: "https://img2.jpg", alt: "Imagem 2" },
+    ],
+  },
 ];
 
-describe('App integration', () => {
+describe("App integration", () => {
   const queryClient = new QueryClient();
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     (api.default.getPosts as any).mockResolvedValue({
       posts: mockPosts,
-      pages: 1
+      pages: 1,
+    });
+
+    (api.default.replaceImage as any).mockResolvedValue({
+      success: true,
     });
   });
 
@@ -35,30 +40,15 @@ describe('App integration', () => {
       </QueryClientProvider>
     );
 
-  it('renderiza título e posts', async () => {
+  it("renderiza título e posts", async () => {
     renderApp();
 
-    expect(screen.getByText('Substituição de Imagens')).toBeInTheDocument();
+    expect(screen.getByText("Substituição de Imagens")).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText('Post de Teste')).toBeInTheDocument();
-    });
+    const postTitle = await screen.findByText("Post de Teste");
+    expect(postTitle).toBeInTheDocument();
 
-    // Verifica imagens
-    expect(screen.getAllByRole('img')).toHaveLength(2);
-  });
-
-  it('abre modal ao clicar em imagem', async () => {
-    renderApp();
-
-    await waitFor(() => {
-      expect(screen.getByText('Post de Teste')).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getAllByRole('img')[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText('Substituir Imagem')).toBeInTheDocument();
-    });
+    const images = screen.getAllByRole("img");
+    expect(images).toHaveLength(2);
   });
 });

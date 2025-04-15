@@ -63,7 +63,8 @@ jobs:
       - name: Create release ZIP
         run: |
           mkdir -p image-replacer
-          cp -r *.php includes admin languages image-replacer/
+          cp -r *.php includes admin image-replacer/
+          [ -d languages ] && cp -r languages image-replacer/
           # Remove development files
           rm -rf image-replacer/admin/js/node_modules
           rm -rf image-replacer/admin/js/src

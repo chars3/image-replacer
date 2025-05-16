@@ -4,6 +4,7 @@ interface WPMediaFrame {
   on: (event: string, callback: () => void) => void;
   open: () => void;
   state: () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get: (property: string) => any;
   };
 }
@@ -37,7 +38,7 @@ const ImageReplaceModal: React.FC<ImageReplaceModalProps> = ({
   const [preview, setPreview] = useState<string | null>(null);
 
   const handleSelectFromMediaLibrary = () => {
-    // @ts-ignore
+    // @ts-expect-error window.wp.media
     const frame = window.wp.media({
       title: "Selecionar imagem",
       multiple: false,

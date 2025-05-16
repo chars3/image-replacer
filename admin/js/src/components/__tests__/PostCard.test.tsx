@@ -54,6 +54,6 @@ describe('PostCard', () => {
     render(<PostCard post={mockPost} onSelectImage={mockSelect} />);
     const img = screen.getByAltText('Imagem 2');
     fireEvent.click(img);
-    expect(mockSelect).toHaveBeenCalledWith(mockPost, mockPost.images[1]);
+    expect(mockSelect).toHaveBeenCalledWith(mockPost, { ...mockPost.images[1], type: 'content' });
   });
 });

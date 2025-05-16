@@ -47,7 +47,7 @@ describe('ImageReplaceModal', () => {
 
   it('chama onReplace com nova e antiga URL', () => {
     const mockReplace = vi.fn();
-
+  
     render(
       <ImageReplaceModal
         post={mockPost}
@@ -56,14 +56,14 @@ describe('ImageReplaceModal', () => {
         onReplace={mockReplace}
       />
     );
-
+  
     const input = screen.getByPlaceholderText(/https:\/\/exemplo.com\/imagem.jpg/i);
     fireEvent.change(input, { target: { value: 'https://nova.com/img.png' } });
-
+  
     const button = screen.getByRole('button', { name: /substituir/i });
     fireEvent.click(button);
-
-    expect(mockReplace).toHaveBeenCalledWith('https://nova.com/img.png', mockImage.src);
+  
+    expect(mockReplace).toHaveBeenCalledWith('https://nova.com/img.png', mockImage.src, false);
   });
 
   it('chama onClose ao clicar em cancelar', () => {

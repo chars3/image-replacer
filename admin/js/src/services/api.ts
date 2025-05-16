@@ -130,6 +130,19 @@ const apiService = {
     }
   },
 
+  async replaceFeaturedImage(postId: number, newImageSrc: string): Promise<ReplaceImageResponse> {
+    try {
+      const response = await api.post<ReplaceImageResponse>('/replace-featured-image', {
+        post_id: postId,
+        new_image: newImageSrc
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao substituir imagem destacada:', error);
+      throw error;
+    }
+  },
+  
   // Utilitário para integração com a Media Library do WordPress
   openMediaLibrary(options: MediaLibraryOptions = {}): Promise<Attachment> {
     // Verifica se a API de media do WordPress está disponível

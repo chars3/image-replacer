@@ -25,6 +25,18 @@ interface PostsResponse {
   pages: number;
 }
 
+type ImageType = 'featured' | 'content' | undefined;
+
+interface Image {
+  src: string;
+  width?: string | number;
+  height?: string | number;
+  alt?: string;
+  attachment_id?: number;
+  class?: string;
+  type?: ImageType;
+}
+
 function App() {
   const [page, setPage] = useState<number>(1);
   const [perPage] = useState<number>(10);
@@ -50,12 +62,32 @@ function App() {
     setShowReplaceModal(false);
   };
 
-  const handleReplaceImage = async (newImageUrl: string, oldImageUrl: string) => {
+  // const handleReplaceImage = async (newImageUrl: string, oldImageUrl: string) => {
+  //   try {
+  //     await apiService.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
+  //     setShowReplaceModal(false);
+  //     refetch();
+
+  //     toast.success("Imagem substituída com sucesso.", {
+  //       autoClose: 5000,
+  //     });
+  //   } catch (err) {
+  //     console.error("Erro ao substituir imagem:", err);
+  //     toast.error("Erro ao substituir a imagem.");
+  //   }
+  // };
+
+  const handleReplaceImage = async (newImageUrl: string, oldImageUrl: string, isFeatured: boolean = false) => {
     try {
-      await apiService.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
+      if (isFeatured) {
+        await apiService.replaceFeaturedImage(selectedPost!.id, newImageUrl);
+      } else {
+        await apiService.replaceImage(selectedPost!.id, oldImageUrl, newImageUrl);
+      }
+
       setShowReplaceModal(false);
       refetch();
-
+  
       toast.success("Imagem substituída com sucesso.", {
         autoClose: 5000,
       });
@@ -64,7 +96,7 @@ function App() {
       toast.error("Erro ao substituir a imagem.");
     }
   };
-
+  
   return (
     <div className="container p-6">
       <h2 className="text-2xl font-bold mb-6">Substituição de Imagens</h2>

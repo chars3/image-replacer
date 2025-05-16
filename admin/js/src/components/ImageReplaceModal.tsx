@@ -11,6 +11,7 @@ interface WPMediaFrame {
 interface Image {
   src: string;
   alt?: string;
+  type?: 'featured' | 'content';
 }
 
 interface Post {
@@ -23,7 +24,7 @@ interface ImageReplaceModalProps {
   post: Post;
   image: Image;
   onClose: () => void;
-  onReplace: (newImageUrl: string, oldImageUrl: string) => void;
+  onReplace: (newImageUrl: string, oldImageUrl: string, isFeatured: boolean) => void;
 }
 
 const ImageReplaceModal: React.FC<ImageReplaceModalProps> = ({
@@ -55,7 +56,7 @@ const ImageReplaceModal: React.FC<ImageReplaceModalProps> = ({
 
   const handleSubmit = () => {
     if (newUrl.trim() !== "") {
-      onReplace(newUrl, image.src); // agora passa a nova e a antiga
+      onReplace(newUrl, image.src, image.type === 'featured'); // <- Corrigido aqui
     } else {
       alert("Por favor, selecione uma imagem ou insira uma URL.");
     }

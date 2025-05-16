@@ -9,54 +9,23 @@
  */
 class Image_Replacer_API
 {
-
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
 	private $plugin_name;
-
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
 	private $version;
 
-	/**
-	 * Initialize the class and set its properties.
-	 *
-	 * @since    1.0.0
-	 * @param      string    $plugin_name       The name of this plugin.
-	 * @param      string    $version    The version of this plugin.
-	 */
 	public function __construct($plugin_name, $version)
 	{
-
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 	}
 
-	/**
-	 * Register the REST API routes
-	 *
-	 * @since    1.0.0
-	 */
 	public function register_routes()
 	{
-		// Endpoint para listar posts com imagens
 		register_rest_route($this->plugin_name . '/v1', '/posts', array(
 			'methods'  => 'GET',
 			'callback' => array($this, 'get_posts_with_images'),
 			'permission_callback' => array($this, 'permissions_check'),
 		));
 
-		// Endpoint para obter as imagens dentro de um post específico
 		register_rest_route($this->plugin_name . '/v1', '/post/(?P<id>\d+)/images', array(
 			'methods'  => 'GET',
 			'callback' => array($this, 'get_images_from_post'),
@@ -70,13 +39,18 @@ class Image_Replacer_API
 			),
 		));
 
-		// Endpoint para substituir uma imagem
 		register_rest_route($this->plugin_name . '/v1', '/replace-image', array(
 			'methods'  => 'POST',
 			'callback' => array($this, 'replace_image'),
 			'permission_callback' => array($this, 'permissions_check'),
 		));
-		// Endpoint para upload de imagem
+
+		register_rest_route($this->plugin_name . '/v1', '/replace-featured-image', array(
+			'methods'  => 'POST',
+			'callback' => array($this, 'replace_featured_image'),
+			'permission_callback' => array($this, 'permissions_check'),
+		));
+
 		register_rest_route($this->plugin_name . '/v1', '/upload', array(
 			'methods'  => 'POST',
 			'callback' => array($this, 'upload_image'),
@@ -84,38 +58,23 @@ class Image_Replacer_API
 		));
 	}
 
-	/**
-	 * Check if a given request has access
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|bool
-	 */
 	public function permissions_check($request)
 	{
-		// Verificar se o usuário tem permissão de editar posts
 		return current_user_can('edit_posts');
 	}
 
-	/**
-	 * Get posts that contain images
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|WP_REST_Response
-	 */
 	public function get_posts_with_images($request)
 	{
 		$args = array(
 			'post_type'      => 'post',
 			'post_status'    => 'publish',
 			'posts_per_page' => 20,
-			's'              => '<img', // Procurar por posts que contenham tags de imagem
+			's'              => '<img',
 		);
 
-		// Adicionar filtros adicionais se fornecidos no request
 		if (isset($request['page'])) {
 			$args['paged'] = $request['page'];
 		}
-
 		if (isset($request['per_page'])) {
 			$args['posts_per_page'] = $request['per_page'];
 		}
@@ -125,6 +84,27 @@ class Image_Replacer_API
 
 		foreach ($query->posts as $post) {
 			$images = $this->extract_images_from_content($post->post_content);
+
+			$thumbnail_id = get_post_thumbnail_id($post->ID);
+			if ($thumbnail_id) {
+				$thumbnail_url = wp_get_attachment_url($thumbnail_id);
+				$thumbnail_meta = wp_get_attachment_metadata($thumbnail_id);
+				$thumbnail_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+				$thumbnail_post = get_post($thumbnail_id);
+
+				$featured_image = array(
+					'src'     => $thumbnail_url,
+					'width'   => isset($thumbnail_meta['width']) ? $thumbnail_meta['width'] : '',
+					'height'  => isset($thumbnail_meta['height']) ? $thumbnail_meta['height'] : '',
+					'alt'     => $thumbnail_alt,
+					'title'   => $thumbnail_post->post_title,
+					'caption' => $thumbnail_post->post_excerpt,
+					'class'   => 'featured-image',
+					'type'    => 'featured',
+				);
+
+				array_unshift($images, $featured_image);
+			}
 
 			if (!empty($images)) {
 				$posts[] = array(
@@ -137,20 +117,14 @@ class Image_Replacer_API
 		}
 
 		$response = array(
-			'posts'    => $posts,
-			'total'    => $query->found_posts,
-			'pages'    => $query->max_num_pages,
+			'posts' => $posts,
+			'total' => $query->found_posts,
+			'pages' => $query->max_num_pages,
 		);
 
 		return rest_ensure_response($response);
 	}
 
-	/**
-	 * Get all images from a specific post
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|WP_REST_Response
-	 */
 	public function get_images_from_post($request)
 	{
 		$post_id = $request['id'];
@@ -162,6 +136,27 @@ class Image_Replacer_API
 
 		$images = $this->extract_images_from_content($post->post_content);
 
+		$thumbnail_id = get_post_thumbnail_id($post->ID);
+		if ($thumbnail_id) {
+			$thumbnail_url = wp_get_attachment_url($thumbnail_id);
+			$thumbnail_meta = wp_get_attachment_metadata($thumbnail_id);
+			$thumbnail_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+			$thumbnail_post = get_post($thumbnail_id);
+
+			$featured_image = array(
+				'src'     => $thumbnail_url,
+				'width'   => isset($thumbnail_meta['width']) ? $thumbnail_meta['width'] : '',
+				'height'  => isset($thumbnail_meta['height']) ? $thumbnail_meta['height'] : '',
+				'alt'     => $thumbnail_alt,
+				'title'   => $thumbnail_post->post_title,
+				'caption' => $thumbnail_post->post_excerpt,
+				'class'   => 'featured-image',
+				'type'    => 'featured',
+			);
+
+			array_unshift($images, $featured_image);
+		}
+
 		$response = array(
 			'post_id' => $post_id,
 			'title'   => $post->post_title,
@@ -171,12 +166,6 @@ class Image_Replacer_API
 		return rest_ensure_response($response);
 	}
 
-	/**
-	 * Replace image in a post
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 * @return WP_Error|WP_REST_Response
-	 */
 	public function replace_image($request)
 	{
 		$params = $request->get_json_params();
@@ -190,15 +179,11 @@ class Image_Replacer_API
 		$new_image = $params['new_image'];
 
 		$post = get_post($post_id);
-
 		if (empty($post)) {
 			return new WP_Error('no_post', 'Post não encontrado', array('status' => 404));
 		}
 
-		// Substituir a imagem no conteúdo
 		$content = $post->post_content;
-
-		// Extrair o HTML completo da tag img antiga
 		$pattern = '/<img[^>]*' . preg_quote($old_image, '/') . '[^>]*>/i';
 		preg_match($pattern, $content, $matches);
 
@@ -207,21 +192,15 @@ class Image_Replacer_API
 		}
 
 		$old_img_tag = $matches[0];
-
-		// Criar a nova tag img preservando atributos exceto src
 		$new_img_tag = preg_replace('/src=[\'"][^\'"]*[\'"]/i', 'src="' . esc_url($new_image) . '"', $old_img_tag);
-
-		// Substituir no conteúdo
 		$updated_content = str_replace($old_img_tag, $new_img_tag, $content);
 
-		// Atualizar o post
 		$updated_post = array(
 			'ID'           => $post_id,
 			'post_content' => $updated_content,
 		);
 
 		$result = wp_update_post($updated_post);
-
 		if (is_wp_error($result)) {
 			return $result;
 		}
@@ -233,24 +212,48 @@ class Image_Replacer_API
 		));
 	}
 
-	/**
-	 * Extract all images from post content
-	 *
-	 * @param string $content Post content.
-	 * @return array Array of images with src, width, height, and alt
-	 */
+	public function replace_featured_image($request)
+	{
+		$params = $request->get_json_params();
+	
+		if (!isset($params['post_id']) || !isset($params['new_image'])) {
+			return new WP_Error('missing_params', 'Parâmetros incompletos', array('status' => 400));
+		}
+	
+		$post_id = $params['post_id'];
+		$new_image_url = esc_url_raw($params['new_image']);
+		$post = get_post($post_id);
+	
+		if (empty($post)) {
+			return new WP_Error('no_post', 'Post não encontrado', array('status' => 404));
+		}
+	
+		// 🧠 Usa a função do WP para obter o ID do attachment baseado na URL
+		$attachment_id = attachment_url_to_postid($new_image_url);
+	
+		if (!$attachment_id) {
+			return new WP_Error('invalid_image', 'Imagem não encontrada na biblioteca de mídia.', array('status' => 404));
+		}
+	
+		set_post_thumbnail($post_id, $attachment_id);
+	
+		return rest_ensure_response(array(
+			'success' => true,
+			'post_id' => $post_id,
+			'message' => 'Imagem destacada substituída com sucesso',
+		));
+	}
+	
+
 	private function extract_images_from_content($content)
 	{
 		$images = array();
 		$doc = new DOMDocument();
-
-		// Suppress warnings from malformed HTML
 		libxml_use_internal_errors(true);
 		$doc->loadHTML(mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8'));
 		libxml_clear_errors();
 
 		$img_tags = $doc->getElementsByTagName('img');
-
 		foreach ($img_tags as $tag) {
 			$image = array(
 				'src'    => $tag->getAttribute('src'),
@@ -260,11 +263,8 @@ class Image_Replacer_API
 				'class'  => $tag->getAttribute('class'),
 			);
 
-			// Verificar se é uma imagem do WordPress com ID de attachment
 			if ($tag->getAttribute('class') && preg_match('/wp-image-(\d+)/i', $tag->getAttribute('class'), $matches)) {
 				$image['attachment_id'] = intval($matches[1]);
-
-				// Obter informações adicionais do attachment
 				$attachment = get_post($image['attachment_id']);
 				if ($attachment) {
 					$image['title'] = $attachment->post_title;
@@ -277,12 +277,7 @@ class Image_Replacer_API
 
 		return $images;
 	}
-	/**
-	 * Upload a new image to WordPress media library
-	 *
-	 * @param WP_REST_Request $request
-	 * @return WP_REST_Response|WP_Error
-	 */
+
 	public function upload_image($request)
 	{
 		$files = $request->get_file_params();
@@ -295,9 +290,7 @@ class Image_Replacer_API
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
-		// Upload para a biblioteca de mídia
 		$attachment_id = media_handle_upload('image', 0);
-
 		if (is_wp_error($attachment_id)) {
 			return new WP_Error('upload_failed', 'Falha ao enviar a imagem.', array('status' => 500));
 		}
